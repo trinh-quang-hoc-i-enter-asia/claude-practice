@@ -1,5 +1,30 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm test *)",
+      "Bash(cp data/tasks.json /tmp/tasks.json.bak)",
+      "Bash(node src/index.js add \"buy milk\" --priority high \"extra words after\")",
+      "Bash(node src/index.js add --priority high \"buy milk\")",
+      "Bash(node src/index.js add \"buy milk\" --priority)",
+      "Bash(git checkout *)"
+    ]
+  },
   "enabledMcpjsonServers": [
-    "filesystem"
-  ]
+    "filesystem",
+    "slack"
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/run-tests.sh",
+            "statusMessage": "Running npm test (tasks.js/index.js changed)..."
+          }
+        ]
+      }
+    ]
+  }
 }
