@@ -9,7 +9,7 @@ import { addTask, completeTask, removeTask, listTasks } from "./tasks.js";
 const HELP = `todo — a tiny task manager
 
 Usage:
-  todo add "<text>"       Add a new task
+  todo add "<text>" [--priority low|medium|high]   Add a new task (default: medium)
   todo list [--done|--pending]   List tasks (default: all)
   todo done <id>          Mark a task as done
   todo remove <id>        Remove a task
@@ -18,7 +18,7 @@ Usage:
 
 function formatTask(task) {
   const box = task.done ? "[x]" : "[ ]";
-  return `${box} #${task.id}  ${task.text}`;
+  return `${box} #${task.id}  ${task.text}  (${task.priority})`;
 }
 
 async function main(argv) {
@@ -26,8 +26,19 @@ async function main(argv) {
 
   switch (command) {
     case "add": {
-      const text = args.join(" ");
-      const task = await addTask(text);
+      const priorityIdx = args.indexOf("--priority");
+      let priority;
+      let textArgs = args;
+      if (priorityIdx !== -1) {
+        priority = args[priorityIdx + 1];
+        if (priority === undefined) {
+          throw new Error("--priority requires a value (low, medium, or high)");
+        }
+        textArgs = [...args.slice(0, priorityIdx), ...args.slice(priorityIdx + 2)];
+      }
+      const text = textArgs.join(" ");
+      const task =
+        priority === undefined ? await addTask(text) : await addTask(text, priority);
       console.log(`Added: ${formatTask(task)}`);
       break;
     }

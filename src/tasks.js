@@ -9,10 +9,12 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const DATA_FILE = path.join(__dirname, "..", "data", "tasks.json");
 
+export const PRIORITIES = ["low", "medium", "high"];
+
 /**
  * Read all tasks from the data file. Returns an empty array if the file
  * doesn't exist yet or is empty.
- * @returns {Promise<Array<{id: number, text: string, done: boolean, createdAt: string}>>}
+ * @returns {Promise<Array<{id: number, text: string, done: boolean, createdAt: string, priority: "low"|"medium"|"high"}>>}
  */
 export async function loadTasks() {
   try {
@@ -36,11 +38,15 @@ export async function saveTasks(tasks) {
 /**
  * Add a new task and persist it.
  * @param {string} text
+ * @param {"low"|"medium"|"high"} [priority="medium"]
  * @returns {Promise<object>} the created task
  */
-export async function addTask(text) {
+export async function addTask(text, priority = "medium") {
   if (!text || !text.trim()) {
     throw new Error("Task text must not be empty");
+  }
+  if (!PRIORITIES.includes(priority)) {
+    throw new Error(`Priority must be one of: ${PRIORITIES.join(", ")}`);
   }
   const tasks = await loadTasks();
   const nextId = tasks.reduce((max, t) => Math.max(max, t.id), 0) + 1;
@@ -49,6 +55,7 @@ export async function addTask(text) {
     text: text.trim(),
     done: false,
     createdAt: new Date().toISOString(),
+    priority,
   };
   tasks.push(task);
   await saveTasks(tasks);

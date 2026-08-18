@@ -5,7 +5,7 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { writeFile, readFile } from "node:fs/promises";
-import { addTask, completeTask, removeTask, listTasks, DATA_FILE } from "../src/tasks.js";
+import { addTask, completeTask, removeTask, listTasks, DATA_FILE, PRIORITIES } from "../src/tasks.js";
 
 let originalData;
 
@@ -29,6 +29,21 @@ test("addTask creates a task with an incrementing id", async () => {
 
 test("addTask rejects empty text", async () => {
   await assert.rejects(() => addTask("   "));
+});
+
+test("addTask defaults priority to medium", async () => {
+  const task = await addTask("Default priority task");
+  assert.equal(task.priority, "medium");
+});
+
+test("addTask accepts an explicit valid priority", async () => {
+  const task = await addTask("High priority task", "high");
+  assert.equal(task.priority, "high");
+  assert.ok(PRIORITIES.includes(task.priority));
+});
+
+test("addTask rejects an invalid priority", async () => {
+  await assert.rejects(() => addTask("Bad priority task", "urgent"));
 });
 
 test("completeTask marks a task done", async () => {
