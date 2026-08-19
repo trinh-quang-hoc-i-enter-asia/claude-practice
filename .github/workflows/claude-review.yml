@@ -1,0 +1,58 @@
+name: Claude PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Review the changes in pull request #${{ github.event.pull_request.number }}
+            against the conventions in CLAUDE.md at the repo root, using the same
+            checklist as the code-reviewer subagent defined in
+            .claude/agents/code-reviewer.md:
+
+            - src/tasks.js vs src/index.js separation of concerns (data/validation
+              logic in tasks.js only, index.js only parses argv / calls functions /
+              formats output)
+            - every function in tasks.js is async and returns a Promise
+            - input validation happens in tasks.js, not index.js, with clear thrown
+              Errors
+            - JSDoc above related functions in tasks.js is updated when a task field
+              changes
+            - tests/tasks.test.js has new tests covering the change, including at
+              least one error case
+            - the HELP string in index.js is updated when a new command is added
+            - no new external dependencies (zero-dependency project)
+            - `npm test` passes
+
+            Use `gh pr diff ${{ github.event.pull_request.number }}` to see the
+            changes. Do not modify any files — only read and report. Post your
+            findings as a single PR review comment using:
+            gh pr review ${{ github.event.pull_request.number }} --comment --body "<your review>"
+
+            Structure the review the same way code-reviewer.md does: one line per
+            checklist item prefixed with an emoji status, ending with a summary line
+            ("Ready to merge" or "Needs fixes: ...").
+          claude_args: |
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr review:*),Bash(npm test:*),Read,Grep,Glob"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
