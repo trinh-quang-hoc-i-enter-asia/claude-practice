@@ -34,3 +34,10 @@ claude-code-practice/
 ## Yêu cầu
 
 Node.js >= 18 (dùng `node:test` built-in và ES modules).
+
+## MCP GitHub practice
+
+Nhánh và PR này được tạo hoàn toàn qua MCP GitHub server (`.mcp.json`) —
+dùng `create_branch`, `create_or_update_file`, và `create_pull_request` —
+để thực hành thao tác với GitHub thông qua MCP tool thay vì `git`/`gh` CLI
+trực tiếp.
