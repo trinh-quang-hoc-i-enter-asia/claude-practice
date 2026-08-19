@@ -4,7 +4,7 @@
 // Kept intentionally minimal — no dependencies — so the whole project stays
 // easy to read in one sitting while you practice Claude Code on it.
 
-import { addTask, completeTask, removeTask, listTasks } from "./tasks.js";
+import { addTask, completeTask, removeTask, listTasks, searchTasks } from "./tasks.js";
 
 const HELP = `todo — a tiny task manager
 
@@ -13,6 +13,7 @@ Usage:
   todo list [--done|--pending]   List tasks (default: all)
   todo done <id>          Mark a task as done
   todo remove <id>        Remove a task
+  todo search <keyword>   Find tasks whose text contains keyword
   todo help               Show this help
 `;
 
@@ -62,6 +63,16 @@ async function main(argv) {
     case "remove": {
       const task = await removeTask(args[0]);
       console.log(`Removed: ${formatTask(task)}`);
+      break;
+    }
+    case "search": {
+      const keyword = args.join(" ");
+      const tasks = await searchTasks(keyword);
+      if (tasks.length === 0) {
+        console.log("No matching tasks.");
+      } else {
+        tasks.forEach((t) => console.log(formatTask(t)));
+      }
       break;
     }
     case "help":

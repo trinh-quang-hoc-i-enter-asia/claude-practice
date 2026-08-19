@@ -5,7 +5,15 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { writeFile, readFile } from "node:fs/promises";
-import { addTask, completeTask, removeTask, listTasks, DATA_FILE, PRIORITIES } from "../src/tasks.js";
+import {
+  addTask,
+  completeTask,
+  removeTask,
+  listTasks,
+  searchTasks,
+  DATA_FILE,
+  PRIORITIES,
+} from "../src/tasks.js";
 
 let originalData;
 
@@ -69,4 +77,15 @@ test("removeTask deletes a task", async () => {
 
 test("removeTask throws for unknown id", async () => {
   await assert.rejects(() => removeTask(999999));
+});
+
+test("searchTasks finds matching tasks case-insensitively", async () => {
+  await addTask("Buy groceries");
+  const results = await searchTasks("GROCER");
+  assert.ok(results.length >= 1);
+  assert.ok(results.every((t) => t.text.toLowerCase().includes("grocer")));
+});
+
+test("searchTasks rejects empty keyword", async () => {
+  await assert.rejects(() => searchTasks("   "));
 });
