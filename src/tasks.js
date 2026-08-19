@@ -101,3 +101,17 @@ export async function listTasks(filter = {}) {
   }
   return tasks;
 }
+
+/**
+ * Search tasks whose text contains the given keyword (case-insensitive).
+ * @param {string} keyword
+ * @returns {Promise<Array<object>>} matching tasks
+ */
+export async function searchTasks(keyword) {
+  if (!keyword || !keyword.trim()) {
+    throw new Error("Search keyword must not be empty");
+  }
+  const tasks = await loadTasks();
+  const needle = keyword.trim().toLowerCase();
+  return tasks.filter((t) => t.text.toLowerCase().includes(needle));
+}
